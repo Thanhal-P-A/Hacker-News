@@ -16,15 +16,19 @@ import {isEmpty} from '../../common';
 import Color from '../../common/Color';
 import {ScreenWidth} from '../../common/Constants';
 
+let pageIndex = 0;
+
 const Comment = React.memo(function Comment(props) {
-  const {idArray} = props.route?.params;
+  const {idArray, renderStory} = props.route?.params;
   const {isInternetReachable} = useSelector(state => state.AppReducer);
-  const [pageIndex, setPageIndex] = useState(0);
   const [comments, setComments] = useState([]);
   const [reply, setReply] = useState([]);
 
   useEffect(() => {
     isInternetReachable && fetchComments();
+    return () => {
+      pageIndex = 0;
+    };
   }, []);
 
   const fetchComments = () => {
@@ -35,16 +39,20 @@ const Comment = React.memo(function Comment(props) {
     )
       return;
     const tempIDArray = idArray.slice(pageIndex, pageIndex + 10);
-    setPageIndex(prev => prev + 10);
-    Promise.all([...tempIDArray.map(id => FetchItem(id))]).then(data => {
-      setComments(prev => [...prev, ...data]);
-      const tempData = data.filter(item => !isEmpty(item.kids));
-      Promise.all([...tempData.map(item => FetchItem(item.kids[0]))]).then(
-        res => {
-          setReply(prev => [...prev, ...res]);
-        },
-      );
-    });
+    pageIndex += 10;
+    Promise.all([...tempIDArray.map(id => FetchItem(id))])
+      .then(data => {
+        setComments(prev => [...prev, ...data]);
+        const tempData = data.filter(item => !isEmpty(item.kids));
+        Promise.all([...tempData.map(item => FetchItem(item.kids[0]))]).then(
+          res => {
+            setReply(prev => [...prev, ...res]);
+          },
+        );
+      })
+      .catch(err => {
+        __DEV__ && console.log('fetch comments error : ', err);
+      });
   };
 
   const renderCommentsAndReply = (item, isComment = true) => {
@@ -78,6 +86,7 @@ const Comment = React.memo(function Comment(props) {
   return (
     <>
       <SafeAreaView style={styles.safearea}>
+        {renderStory()}
         <View style={styles.container}>
           {comments?.length > 0 ? (
             <FlatList

@@ -8,19 +8,22 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import moment from 'moment';
 
 import {FetchTopStoriesID, FetchItem, SetStory} from '../../actions/AppAction';
+import {isEmpty} from '../../common';
 import Color from '../../common/Color';
+
+let pageIndex = 0;
 
 function Home(props) {
   const {navigation} = props;
   const {isInternetReachable, topStoriesIDArray, topStoriesArray} = useSelector(
     state => state.AppReducer,
   );
-  const [pageIndex, setPageIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -32,7 +35,7 @@ function Home(props) {
     setRefreshing(true);
     FetchTopStoriesID()
       .then(res => {
-        setPageIndex(0);
+        pageIndex = 0;
         fetchStory(res);
       })
       .catch(err => {
@@ -44,7 +47,7 @@ function Home(props) {
   const fetchStory = (idArray = topStoriesIDArray) => {
     if (pageIndex == 500 || !isInternetReachable) return;
     const tempIDArray = idArray.slice(pageIndex, pageIndex + 20);
-    setPageIndex(prev => prev + 20);
+    pageIndex += 20;
     Promise.all([...tempIDArray.map(id => FetchItem(id))])
       .then(data => {
         setRefreshing(false);
@@ -56,31 +59,44 @@ function Home(props) {
       });
   };
 
-  const onNavigate = idArray => {
-    navigation.navigate('Comment', {idArray});
+  const onNavigate = (idArray, renderStory) => {
+    navigation.navigate('Comment', {idArray, renderStory: () => renderStory()});
   };
 
   const renderStory = (item, index) => {
-    const {by, kids, score, time, title, url} = item;
+    const {by, descendants, kids, score, time, title, url} = item;
+    const haveComments = !isEmpty(descendants) && descendants > 0;
+    const canOpenURL = !isEmpty(url) && Linking.canOpenURL(url);
     return (
-      <View style={{flex: 1, flexDirection: 'row', padding: 5}}>
-        <Text style={styles.textGrey}>{`${index + 1}. ▲ `}</Text>
-        <TouchableOpacity
-          style={{width: '90%'}}
-          onPress={() => onNavigate(kids)}>
-          <Text style={styles.textBlack}>
-            {title}
-            <Text style={styles.textDetails}>{` (${
-              url?.split('/')[2]
-            }) `}</Text>
-          </Text>
-
-          <Text style={styles.textDetails}>
-            {`${score} points by ${by} ${moment(time * 1000).fromNow()} | ${
-              kids ? kids.length : 0
-            } Comments`}
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.itemContainer}>
+        <Text style={styles.textGrey}>
+          {isEmpty(index) ? ' ▲ ' : `${index + 1}. ▲ `}
+        </Text>
+        <View style={{width: '90%'}}>
+          <TouchableOpacity
+            disabled={!canOpenURL}
+            onPress={() => Linking.openURL(url)}>
+            <Text style={styles.textBlack}>
+              {title}
+              <Text style={styles.textDetails}>{` (${
+                url?.split('/')[2]
+              }) `}</Text>
+            </Text>
+          </TouchableOpacity>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={styles.textDetails}>
+              {`${score} points by ${by} ${moment(time * 1000).fromNow()}`}
+            </Text>
+            {haveComments && (
+              <TouchableOpacity
+                onPress={() => onNavigate(kids, () => renderStory(item))}>
+                <Text style={styles.textDetails}>
+                  {' | ' + descendants + ' Comments'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
       </View>
     );
   };
@@ -141,7 +157,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  textBlack: {color: Color.Black},
-  textGrey: {color: Color.Grey},
-  textDetails: {color: Color.Grey, fontSize: 12},
+  textBlack: {
+    color: Color.Black,
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    padding: 5,
+    backgroundColor: Color.White,
+  },
+  textGrey: {
+    color: Color.Grey,
+  },
+  textDetails: {
+    color: Color.Grey,
+    fontSize: 12,
+  },
 });
