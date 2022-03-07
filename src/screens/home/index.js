@@ -4,17 +4,14 @@ import {
   Text,
   SafeAreaView,
   StyleSheet,
-  TouchableOpacity,
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Linking,
 } from 'react-native';
 import {useSelector} from 'react-redux';
-import moment from 'moment';
+import StoryComponent from '../../components/Story';
 
 import {FetchTopStoriesID, FetchItem, SetStory} from '../../actions/AppAction';
-import {isEmpty} from '../../common';
 import Color from '../../common/Color';
 
 let pageIndex = 0;
@@ -59,46 +56,8 @@ function Home(props) {
       });
   };
 
-  const onNavigate = (idArray, renderStory) => {
-    navigation.navigate('Comment', {idArray, renderStory: () => renderStory()});
-  };
-
-  const renderStory = (item, index) => {
-    const {by, descendants, kids, score, time, title, url} = item;
-    const haveComments = !isEmpty(descendants) && descendants > 0;
-    const canOpenURL = !isEmpty(url) && Linking.canOpenURL(url);
-    return (
-      <View style={styles.itemContainer}>
-        <Text style={styles.textGrey}>
-          {isEmpty(index) ? ' ▲ ' : `${index + 1}. ▲ `}
-        </Text>
-        <View style={{width: '90%'}}>
-          <TouchableOpacity
-            disabled={!canOpenURL}
-            onPress={() => Linking.openURL(url)}>
-            <Text style={styles.textBlack}>
-              {title}
-              <Text style={styles.textDetails}>{` (${
-                url?.split('/')[2]
-              }) `}</Text>
-            </Text>
-          </TouchableOpacity>
-          <View style={{flexDirection: 'row'}}>
-            <Text style={styles.textDetails}>
-              {`${score} points by ${by} ${moment(time * 1000).fromNow()}`}
-            </Text>
-            {haveComments && (
-              <TouchableOpacity
-                onPress={() => onNavigate(kids, () => renderStory(item))}>
-                <Text style={styles.textDetails}>
-                  {' | ' + descendants + ' Comments'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-    );
+  const onNavigate = (idArray, storyItem) => {
+    navigation.navigate('Comment', {idArray, storyItem});
   };
 
   return (
@@ -108,7 +67,9 @@ function Home(props) {
           {topStoriesArray?.length > 0 ? (
             <FlatList
               data={topStoriesArray}
-              renderItem={({item, index}) => renderStory(item, index)}
+              renderItem={({item, index}) =>
+                StoryComponent(item, index, onNavigate)
+              }
               keyExtractor={(item, index) => item.id + index.toString()}
               initialNumToRender={20}
               refreshControl={
@@ -159,17 +120,5 @@ const styles = StyleSheet.create({
   },
   textBlack: {
     color: Color.Black,
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    padding: 5,
-    backgroundColor: Color.White,
-  },
-  textGrey: {
-    color: Color.Grey,
-  },
-  textDetails: {
-    color: Color.Grey,
-    fontSize: 12,
   },
 });

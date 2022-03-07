@@ -10,6 +10,7 @@ import {
 import {useSelector} from 'react-redux';
 import RenderHTML from 'react-native-render-html';
 import moment from 'moment';
+import StoryComponent from '../../components/Story';
 
 import {FetchItem} from '../../actions/AppAction';
 import {isEmpty} from '../../common';
@@ -19,7 +20,7 @@ import {ScreenWidth} from '../../common/Constants';
 let pageIndex = 0;
 
 const Comment = React.memo(function Comment(props) {
-  const {idArray, renderStory} = props.route?.params;
+  const {idArray, storyItem} = props.route?.params;
   const {isInternetReachable} = useSelector(state => state.AppReducer);
   const [comments, setComments] = useState([]);
   const [reply, setReply] = useState([]);
@@ -86,7 +87,7 @@ const Comment = React.memo(function Comment(props) {
   return (
     <>
       <SafeAreaView style={styles.safearea}>
-        {renderStory()}
+        {StoryComponent(storyItem)}
         <View style={styles.container}>
           {comments?.length > 0 ? (
             <FlatList
@@ -137,7 +138,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  textBlack: {color: Color.Black},
-  textGrey: {color: Color.Grey},
-  textDetails: {color: Color.Grey, fontSize: 12},
+  textBlack: {
+    color: Color.Black,
+  },
+  textGrey: {
+    color: Color.Grey,
+  },
+  textDetails: {
+    color: Color.Grey,
+    fontSize: 12,
+  },
 });
