@@ -1,6 +1,6 @@
 import {
   IS_INTERNET_REACHABLE,
-  FETCH_TOP_STORIES_ID,
+  SET_TOP_STORIES_ID,
   SET_STORY,
 } from '../actions/ActionType';
 
@@ -17,7 +17,7 @@ const AppReducer = (state = initialState, action) => {
         ...state,
         isInternetReachable: action.isInternetReachable,
       };
-    case FETCH_TOP_STORIES_ID:
+    case SET_TOP_STORIES_ID:
       return {
         ...state,
         topStoriesIDArray: action.data,

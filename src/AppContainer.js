@@ -1,10 +1,7 @@
 import React, {useEffect} from 'react';
 import {Alert, StatusBar} from 'react-native';
 import {useSelector} from 'react-redux';
-import {
-  setJSExceptionHandler,
-  setNativeExceptionHandler,
-} from 'react-native-exception-handler';
+import {setJSExceptionHandler} from 'react-native-exception-handler';
 import NetInfo from '@react-native-community/netinfo';
 
 import {IsInternetReachable} from './actions/AppAction';
@@ -20,7 +17,6 @@ const exceptionhandler = e => {
     );
 };
 
-setNativeExceptionHandler(exceptionhandler, false);
 setJSExceptionHandler(exceptionhandler, true);
 
 function App(props) {

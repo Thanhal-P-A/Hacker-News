@@ -18,12 +18,15 @@ import Color from '../../common/Color';
 import {ScreenWidth} from '../../common/Constants';
 
 let pageIndex = 0;
+let loadingMsg = 'Loading comments....';
+let errorMsg = 'Error getting comments !!!';
 
 const Comment = React.memo(function Comment(props) {
   const {idArray, storyItem} = props.route?.params;
   const {isInternetReachable} = useSelector(state => state.AppReducer);
   const [comments, setComments] = useState([]);
   const [reply, setReply] = useState([]);
+  const [fetchingMessage, setFetchingMessage] = useState(loadingMsg);
 
   useEffect(() => {
     isInternetReachable && fetchComments();
@@ -39,20 +42,23 @@ const Comment = React.memo(function Comment(props) {
       !isInternetReachable
     )
       return;
+    setFetchingMessage(loadingMsg);
     const tempIDArray = idArray.slice(pageIndex, pageIndex + 10);
     pageIndex += 10;
     Promise.all([...tempIDArray.map(id => FetchItem(id))])
       .then(data => {
+        if (isEmpty(data)) return;
         setComments(prev => [...prev, ...data]);
         const tempData = data.filter(item => !isEmpty(item.kids));
         Promise.all([...tempData.map(item => FetchItem(item.kids[0]))]).then(
           res => {
+            if (isEmpty(res)) return;
             setReply(prev => [...prev, ...res]);
           },
         );
       })
       .catch(err => {
-        __DEV__ && console.log('fetch comments error : ', err);
+        setFetchingMessage(errorMsg);
       });
   };
 
@@ -107,9 +113,7 @@ const Comment = React.memo(function Comment(props) {
             <View style={styles.emptyContainer}>
               <Text style={styles.textBlack}>
                 {isInternetReachable
-                  ? isEmpty(idArray)
-                    ? 'No comments'
-                    : 'Loading comments....'
+                  ? fetchingMessage
                   : 'Please check your internet connection and retry'}
               </Text>
             </View>

@@ -11,10 +11,18 @@ import {
 import {useSelector} from 'react-redux';
 import StoryComponent from '../../components/Story';
 
-import {FetchTopStoriesID, FetchItem, SetStory} from '../../actions/AppAction';
+import {
+  FetchTopStoriesID,
+  FetchItem,
+  SetStory,
+  SetTopStoriesID,
+} from '../../actions/AppAction';
 import Color from '../../common/Color';
+import {isEmpty} from '../../common';
 
 let pageIndex = 0;
+let loadingMsg = 'Loading top stories....';
+let errorMsg = 'Error getting stories !!!';
 
 function Home(props) {
   const {navigation} = props;
@@ -22,37 +30,43 @@ function Home(props) {
     state => state.AppReducer,
   );
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchingMessage, setFetchingMessage] = useState(loadingMsg);
 
   useEffect(() => {
-    isInternetReachable && fetchTopStories();
+    fetchTopStories();
   }, []);
 
-  const fetchTopStories = () => {
+  const fetchTopStories = async () => {
     if (!isInternetReachable) return;
     setRefreshing(true);
+    setFetchingMessage(loadingMsg);
     FetchTopStoriesID()
-      .then(res => {
+      .then(async data => {
         pageIndex = 0;
-        fetchStory(res);
+        if (isEmpty(data)) return;
+        SetTopStoriesID(data);
+        fetchStory(data);
       })
       .catch(err => {
-        __DEV__ && console.log('fetch top story id error : ', err);
         setRefreshing(false);
+        setFetchingMessage(errorMsg);
       });
   };
 
-  const fetchStory = (idArray = topStoriesIDArray) => {
+  const fetchStory = async (idArray = topStoriesIDArray) => {
     if (pageIndex == 500 || !isInternetReachable) return;
+    setFetchingMessage(loadingMsg);
     const tempIDArray = idArray.slice(pageIndex, pageIndex + 20);
     pageIndex += 20;
     Promise.all([...tempIDArray.map(id => FetchItem(id))])
       .then(data => {
+        if (isEmpty(data)) return;
         setRefreshing(false);
         SetStory(data);
       })
       .catch(err => {
-        __DEV__ && console.log('fetch story item error : ', err);
         setRefreshing(false);
+        setFetchingMessage(errorMsg);
       });
   };
 
@@ -89,7 +103,7 @@ function Home(props) {
             <View style={styles.emptyContainer}>
               <Text style={styles.textBlack}>
                 {isInternetReachable
-                  ? 'Loading top stories....'
+                  ? fetchingMessage
                   : 'Please check your internet connection and retry'}
               </Text>
             </View>

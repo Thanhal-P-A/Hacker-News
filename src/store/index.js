@@ -1,7 +1,7 @@
 import {applyMiddleware, combineReducers, compose, createStore} from 'redux';
 import {persistReducer, persistStore} from 'redux-persist';
 import logger from 'redux-logger';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Reducer from '../reducers';
 

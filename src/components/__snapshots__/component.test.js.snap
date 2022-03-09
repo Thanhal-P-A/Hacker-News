@@ -1,0 +1,114 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NetworkError component renders correctly 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#EB4234",
+      "padding": 10,
+      "width": "100%",
+    }
+  }
+>
+  <Text
+    style={
+      Object {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+      }
+    }
+  >
+    Internet not reachable
+  </Text>
+</View>
+`;
+
+exports[`Story component renders correctly 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "#FFFFFF",
+      "flexDirection": "row",
+      "padding": 5,
+    }
+  }
+>
+  <Text
+    style={
+      Object {
+        "color": "#707070",
+      }
+    }
+  >
+     ▲ 
+  </Text>
+  <View
+    style={
+      Object {
+        "width": "90%",
+      }
+    }
+  >
+    <View
+      accessibilityState={
+        Object {
+          "disabled": true,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        Object {
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#000000",
+          }
+        }
+      >
+        <Text
+          style={
+            Object {
+              "color": "#707070",
+              "fontSize": 12,
+            }
+          }
+        >
+           (undefined) 
+        </Text>
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#707070",
+            "fontSize": 12,
+          }
+        }
+      >
+        undefined points by undefined Invalid date
+      </Text>
+    </View>
+  </View>
+</View>
+`;
